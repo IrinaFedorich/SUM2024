@@ -1,0 +1,42 @@
+ <!-- FILE NAME  : main.html
+      PROGRAMMER : IF4
+      LAST UPDATE: 08.06.2024
+      PURPOSE    : Display of platonic figures.
+                   Main html module. -->
+
+<!DOCTYPE html>
+<html lang="ru" class="notranslate" translate="no">
+  <head>
+    <meta name="google" content="notranslate">    
+    <meta charset="utf-8" />
+    <title>CGSG:IF4 CGSG'SummerPractice2024. Platonic solid.</title>
+  </head>
+  <body>
+    <b> Platonic solid</b>
+    <br />
+    <canvas id="myCan0" width="300px" height="300px" style="border: 2px solid violet"></canvas>
+    <canvas id="myCan1" width="300px" height="300px" style="border: 2px solid violet"></canvas>
+    <canvas id="myCan2" width="300px" height="300px" style="border: 2px solid violet"></canvas>
+    <canvas id="myCan3" width="300px" height="300px" style="border: 2px solid violet"></canvas>
+    <canvas id="myCan4" width="300px" height="300px" style="border: 2px solid violet"></canvas>
+    <script type="module">
+      import * as vigl from "./main.js";
+ 
+      window.addEventListener("load", () => {
+        vigl.initGL();
+        const draw = () => {
+          // drawing
+          vigl.render();
+ 
+          // animation register
+          window.requestAnimationFrame(draw);
+        };
+        draw();
+      }); 
+    </script> 
+  </body>
+</html>
+
+<!-- END OF 'main.html' FILE  -->
+
+

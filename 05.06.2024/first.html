@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="ru" class="notranslate" translate ="no">
+  <head>
+    <meta name="google" content="notranslate">
+    <title>Project</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" type="text/css" href="index.css" />
+  </head>
+  <body>
+    <h1>CGSG summer practice</h1>
+    <b style="color:brown;">
+        MiaoMiaoMiaoMiaoMiaoMiaoMiaoMiaoMiaoMiaoMiaoMiaoMiaoMiaoMiaoMiaoMiaoMiaoMiaoMiaoMiaoMiaoMiaoMiaoMiaoMiaoMiaoMiao
+    </b>
+    <br />
+    <img src="giraffe256.jpg" width=500 height=500>
+    <img src="M.BMP" width=500 height=500>
+    <br />
+     </body>
+</html>
+
+ vec2 Z = DrawPos;
+    vec2 Z0 = Z, C = vec2(0.35, 0.38);
+
+    let n;
+
+    while (n < 100 && lenght(Z) < 2)
+    {
+      Z = vec2(Z.x * Z.x - Z.y * Z.y, 2 * Z.x * Z.y) + C;
+      n++;
+    }
+
+    OutColor = vec4(n * sin(n * 8.0 + Time * 5.0) * sin(n * 8.0 + Time * 2.0), abs(sin(Time)), 1.0, 1.0);

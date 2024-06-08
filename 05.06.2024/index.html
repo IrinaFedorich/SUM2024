@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="ru" class="notranslate" translate="no">
+  <head>
+    <meta name="google" content="notranslate">    
+    <meta charset="utf-8" />
+    <title>CGSG:IF4 CGSG'SummerPractice2024. G.Julia Drawing</title>
+  </head>
+  <body>
+    <canvas id="myCan" width="500px" height="500px" style="border: 2px solid rgb(183, 0, 255)"></canvas>
+    <script type="module">
+      import * as vigl from "./index.js";
+ 
+      window.addEventListener("load", () => {
+        vigl.initGL();
+        const draw = () => {
+          // drawing
+          vigl.render();
+ 
+          // animation register
+          window.requestAnimationFrame(draw);
+        };
+        draw();
+      });
+    </script>
+  </body>
+</html>
