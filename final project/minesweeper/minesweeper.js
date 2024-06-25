@@ -1,52 +1,71 @@
-let r = 13, c = 13, s = 50, boxes, field, flag, fail, reveal,
+let r = 20, c = 20, s = 50, boxes, field, flag, fail, reveal, 
   canvas = document.getElementById('canvas'), 
-  replayButton = document.getElementById('replay');
+  replayButton = document.getElementById('replay'),
+  saveButton = document.getElementById('save');
 
-function toKey(row, col) {
+function Put(row, col) {
   return row + '-' + col;
 }
 
-function fromKey(key) {
+function Get(key) {
   return key.split('-').map(Number);
 }
 
 function createButtons() {
+  let i, j, box;
   canvas.style.width = r * s + 'px';
   canvas.style.height = c * s + 'px';
-  for (let i = 0; i < r; i++) {
-    for (let j = 0; j < c; j++) {
-      let cell = document.createElement('button');
-      cell.style.float = 'left';
-      cell.style.width = s + 'px';
-      cell.style.height = s + 'px';
-      cell.oncontextmenu = (e) => {
+  for (i = 0; i < r; i++) {
+    for (j = 0; j < c; j++) {
+      box = document.createElement('button');
+      box.style.float = 'left';
+      box.style.width = s + 'px';
+      box.style.height = s + 'px';
+      box.oncontextmenu = (e) => {
         if (fail !== null) 
           return;
         e.preventDefault();
-        toggleFlag(key);
+        changeState(key);
         update();
       }
-      cell.onclick = (e) => {
+      box.onclick = (e) => {
         if (fail !== null) 
           return;
         if (flag.has(key)) 
           return;
-        revealCell(key);
+        openBox(key);
         update();
       }
-      canvas.appendChild(cell);
-      let key = toKey(i, j);
-      boxes.set(key, cell);
+      canvas.appendChild(box);
+      let key = Put(i, j);
+      boxes.set(key, box);
     }
   }
+  replayButton.onclick = localStorage.clear();
   replayButton.onclick = start;
+  saveButton.onclick = save;
+}
+
+function save() {
+  let i, j, key, box;
+  storage = window.localStorage;
+  
+  for (i = 0; i < r; i++) 
+    for (j = 0; j < c; j++) 
+    {
+      key = Put(i, j);
+      box = boxes.get(key);
+      value = field.get(key);
+    //  num[i][j] = box;
+    }
+   // localStorage.setItem() = num;
 }
 
 function start() {
   fail = null;
   reveal = new Set();
   flag = new Set();
-  field = generateMap(generateBombs())
+  field = createField(createBombs())
   if (boxes) 
     update();
   else {
@@ -58,64 +77,66 @@ function start() {
 function update() {
   for (let i = 0; i < r; i++) {
     for (let j = 0; j < c; j++) {
-      let key = toKey(i, j),
-        cell = boxes.get(key),
+      let key = Put(i, j),
+        box = boxes.get(key),
         value = field.get(key);
 
-      cell.style.backgroundColor = '';
-      cell.style.color = 'black';
-      cell.textContent = '';
-      cell.disabled = false;
+      box.style.backgroundColor = '';
+      box.style.color = 'black';
+      box.textContent = '';
+      box.disabled = false;
 
         if (fail !== null && value === 'b') {
-          cell.disabled = true;
-          cell.textContent = '💥';
+          box.disabled = true;
+          box.textContent = '💥';
         if (key === fail) {
-          cell.style.backgroundColor = 'purple';
+          box.style.backgroundColor = 'green';
         }
       } else if (reveal.has(key)) {
-            cell.disabled = true
+            box.disabled = true
             if (value === undefined) 
-              cell.textContent = ' ';
+              box.textContent = ' ';
             else if (value === 1) {
-              cell.textContent = '1';
-              cell.style.color = 'blue';
+              box.textContent = '1';
+              box.style.color = 'blue';
             } else if (value === 2) {
-              cell.textContent = '2';
-              cell.style.color = 'green';
+              box.textContent = '2';
+              box.style.color = 'green';
             } else if (value >= 3) {
-              cell.textContent = value;
-              cell.style.color = 'red';
+              box.textContent = value;
+              box.style.color = 'red';
             } else 
               throw Error('o-o');
       } else if (flag.has(key)) 
-        cell.textContent = '❓';
+        box.textContent = '❓';
     }
   }
   if (fail !== null) {
     canvas.style.pointerEvents = 'none';
     replayButton.style.display = 'block';
+    saveButton.style.display = 'block';
   } else {
     canvas.style.pointerEvents = '';
-    replayButton.style.display = '';   
+    replayButton.style.display = '';
+    saveButton.style.display = '';   
   }
 }
 
-function toggleFlag(key) {
+function changeState(key) {
   if (flag.has(key)) 
     flag.delete(key);
   else 
     flag.add(key);
 }
 
-function revealCell(key) {
+function openBox(key) {
   if (field.get(key) === 'b') 
     fail = key;
   else 
-    propagateReveal(key, new Set());
+  revealMore(key, new Set());
 }
 
-function propagateReveal(key, visited) {
+function revealMore(key, visited) {
   reveal.add(key);
   visited.add(key);
 
@@ -123,7 +144,7 @@ function propagateReveal(key, visited) {
   if (isEmpty) 
     for (let neighborKey of getNeighbors(key)) 
       if (!visited.has(neighborKey)) 
-        propagateReveal(neighborKey, visited);
+        revealMore(neighborKey, visited);
 }
 
 function isInBounds([row, col]) {
@@ -135,7 +156,7 @@ function isInBounds([row, col]) {
 }
 
 function getNeighbors(key) {
-  let [x, y] = fromKey(key),
+  let [x, y] = Get(key),
     neighbors = [
     [x - 1, y - 1],
     [x - 1, y],
@@ -145,42 +166,39 @@ function getNeighbors(key) {
     [x + 1, y - 1],
     [x + 1, y],
     [x + 1, y + 1],
-    ]
-  return neighbors.filter(isInBounds).map(([r, c]) => toKey(r, c));
+    ];
+  return neighbors.filter(isInBounds).map(([r, c]) => Put(r, c));
 }
 
-function generateBombs() {
+function createBombs() {
   let count = Math.round(Math.sqrt(r * c)),
-    bombs = [], allKeys = []
+    allKeys = [], coinFlip;
   for (let i = 0; i < r; i++) {
-    for (let j = 0; j < c; j++) {
-      allKeys.push(toKey(i, j))
-    }
+    for (let j = 0; j < c; j++) 
+      allKeys.push(Put(i, j));
   }
   allKeys.sort(() => {
-    let coinFlip = Math.random() > 0.5
-    return coinFlip ? 1 : -1
+    coinFlip = Math.random() > 0.5;
+    return coinFlip ? 1 : -1;
   })
-  return allKeys.slice(0, count)
+  return allKeys.slice(0, count);
 }
 
-function generateMap(seedBombs) {
-  let field = new Map()
+function createField(numOfB) {
+  let field = new Map(), key, old;
   function incrementDanger(neighborKey) {
-    if (!field.has(neighborKey)) {
+    if (!field.has(neighborKey)) 
         field.set(neighborKey, 1);
-    } else {
-      let oldVal = field.get(neighborKey)
-      if (oldVal !== 'b') {
-        field.set(neighborKey, oldVal + 1)
-      }
+    else {
+      old = field.get(neighborKey);
+      if (old !== 'b') 
+        field.set(neighborKey, old + 1);
     }
   }
-  for (let key of seedBombs) {
+  for (key of numOfB) {
     field.set(key, 'b');
-    for (let neighborKey of getNeighbors(key)) {
-      incrementDanger(neighborKey)
-    }
+    for (let neighborKey of getNeighbors(key)) 
+      incrementDanger(neighborKey);
   }
   return field;
 }
